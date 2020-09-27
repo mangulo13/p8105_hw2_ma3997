@@ -24,6 +24,7 @@ trashwheel_df =
                 sports_balls = round(sports_balls),
                 sports_balls = as.integer(sports_balls)) %>% 
         view
+median(pull(trashwheel_df, sports_balls))
 ```
 
 Read precipitation data
@@ -36,7 +37,9 @@ precip_2018 =
         janitor::clean_names() %>% 
         drop_na(month) %>% 
         mutate(year = 2018) %>% 
-        relocate(year)
+        relocate(year) %>% 
+        view
+
 
 precip_2017 = 
         read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
@@ -46,6 +49,7 @@ precip_2017 =
         drop_na(month) %>% 
         mutate(year = 2017) %>% 
         relocate(year)
+
 ```
 
 Now combine annual precipitation. 
@@ -60,21 +64,26 @@ month_df =
 precip_df = 
         bind_rows(precip_2018, precip_2017) 
 
-left_join(precip_df, month_df, by = "month")
+left_join(precip_df, month_df, by = "month") %>% 
+        view
 
 ```
 
 
 This dataset contains information from the Mr. Trashwheel trash collector in Baltimore, MD. As trash enters the inner harbor, the trashwheel collects that trash, and stores it in a dumpster. The dataset contains information on year, month, and trash collected, include some specific kinds of trash. There are a total of `r nrow(trashwheel_df)` rows in our final dataset. Additional data sheets include month precipitation data. 
 
-The total precipitation for 2018 
+The total precipitation for 2018 was `r sum(pull(precip_2018, "total"))` inches. 
 
-The median number of sports balls in 
-
-
+The median number of sports balls in 2018 was `r trashwheel_df %>% filter(year == 2017) %>% pull(sports_balls) %>% median()`.
 
 
+## Problem 2
 
+Read the NYC Transit data
+
+```{r}
+
+```
 
 
 
