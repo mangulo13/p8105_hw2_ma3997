@@ -82,15 +82,69 @@ The median number of sports balls in 2018 was `r trashwheel_df %>% filter(year =
 Read the NYC Transit data
 
 ```{r}
+transit_df = read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+        janitor::clean_names() %>%
+        select(line:entry, vending, ada) %>%
+        mutate(entry = recode(entry,YES = TRUE, NO = FALSE))%>% 
+        view
+      
+```
+
+This dataset contains information on the subway lines in New York City including station names, location, entrances, routes, and ADA compliance. There are `r nrow(transit_df)` rows and `r ncol(transit_df)` columns in this dataset. The data was tidied by cleaning column names, selecting columns of interest, and reformatting "entry" as a logical variable instead of character.
+
+This dataset is not super tidy. Routes are untidy with observations and variables as longer than wider. 
+
+Let's look at the number of unique stations, those that are ADA compliant, and those without vending that allow entry. 
+
+```{r}
+distinct(transit_df, line, station_name) %>% 
+        count()
+
+filter(transit_df, ada == TRUE) %>% 
+        distinct(line, station_name) %>% 
+        count()
+
+with_entry = filter(transit_df, vending == "NO", entry == TRUE) %>% 
+        distinct(line, station_name) %>% 
+        count()
+        
+total = filter(transit_df, vending == "NO") %>% 
+        distinct(line, station_name) %>% 
+        count()
 
 ```
 
+There are `r count(distinct(transit_df, line, station_name))` unique subway stations in NYC. 
+
+of those station, only `r filter(transit_df, ada == TRUE) %>% distinct(line, station_name) %>% count()` are ADA compliant. 
+
+`r with_entry` out of `r total` stations without vending allow entrance. 
+
+Let's tidy up the data by creating a route_name and route_number variable. Afterwards we'll look at how many stations are on the A line and how many of those are ADA compliant. 
+```{r}
+transit_tidy = 
+        transit_df %>%
+        mutate_at(vars(route1:route11), as.character) %>% 
+        pivot_longer(route1:route11,
+                     names_to = "route_number",
+                     names_prefix = "route",
+                     values_to = "route_name" ) %>% 
+        drop_na(route_name) %>% 
+        view
 
 
+a_train = filter(transit_tidy, route_name == "A") %>% 
+        distinct(line, station_name) %>% 
+        view
 
+a_count = count(a_train)
 
+a_ada = filter(transit_tidy, route_name == "A", ada == TRUE) %>% 
+        distinct(line, station_name) %>% 
+        count()
 
+```
 
+There are `r a_count` stations that service the A line. Of those `r a_ada` are ADA compliant. 
 
-
-
+## Problem 3
